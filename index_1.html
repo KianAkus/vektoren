@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="Kian Akus">
+<meta name="description" content="Interaktive Lernseite zur Vektorgeometrie – GFS Mathematik von Kian Akus">
+<style>:root{color-scheme:light dark}[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Vektoren im Raum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Karopapier-Heft. Oben das 3D-Bild + Steuerung, darunter Lern-Tabs mit Live-Rechnung, dann Merksätze. */
+:root{
+  --paper:#f7f9fc; --grid:#dfe6f1; --ink:#1b2a44; --muted:#5d6b82; --line:#c9d3e3;
+  --card:#ffffff; --accent:#2251b5; --accent-soft:#e6edfb;
+  --va:#0f8a6a; --vb:#d4691c; --vm:#8b3fc9; --x1:#c23b3b; --x2:#2f8a3a; --x3:#2a5fd0;
+  --warn-bg:#fdeeee; --warn:#b3261e;
+  --f-hand:"Caveat","Comic Sans MS",cursive;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111827; --grid:#1d2738; --ink:#e6ebf4; --muted:#9aa8bf; --line:#2c3a52;
+  --card:#172133; --accent:#7ea2ff; --accent-soft:#1d2c4d;
+  --va:#3ccfa2; --vb:#ff9a4d; --vm:#c08cff; --x1:#ff7373; --x2:#6fd17a; --x3:#7aa5ff;
+  --warn-bg:#3a1d20; --warn:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111827; --grid:#1d2738; --ink:#e6ebf4; --muted:#9aa8bf; --line:#2c3a52;
+  --card:#172133; --accent:#7ea2ff; --accent-soft:#1d2c4d;
+  --va:#3ccfa2; --vb:#ff9a4d; --vm:#c08cff; --x1:#ff7373; --x2:#6fd17a; --x3:#7aa5ff;
+  --warn-bg:#3a1d20; --warn:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 60px;display:grid;gap:28px}
+header h1{font-family:var(--f-hand);font-size:clamp(2.6rem,6vw,3.6rem);line-height:1;margin:0;color:var(--accent);text-wrap:balance}
+header p{margin:.4rem 0 0;max-width:62ch;color:var(--muted)}
+.lead{font-weight:600;color:var(--ink)}
+.stage{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.canvas-box{background:var(--card);border:1px solid var(--line);border-radius:10px;position:relative;min-width:0}
+canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;touch-action:none;cursor:grab;border-radius:10px}
+canvas:active{cursor:grabbing}
+.hint{position:absolute;left:12px;bottom:10px;font-size:.8rem;color:var(--muted);pointer-events:none}
+.reset{position:absolute;right:10px;top:10px}
+button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:.35rem .7rem;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.panel{display:grid;gap:14px;min-width:0}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.points{display:grid;gap:8px}
+.pt{display:grid;grid-template-columns:2.2rem repeat(3,minmax(0,1fr));gap:6px;align-items:center}
+.pt b{font-family:var(--f-hand);font-size:1.6rem;line-height:1}
+.pt input{width:100%;min-width:0;font-family:var(--f-mono);font-size:1rem;padding:.3rem .4rem;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);text-align:center}
+.coords-head{display:grid;grid-template-columns:2.2rem repeat(3,minmax(0,1fr));gap:6px;font-family:var(--f-mono);font-size:.8rem;text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle;background:currentColor}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font-weight:600}
+.lesson{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+@media (max-width:820px){.lesson{grid-template-columns:1fr}}
+.lesson h2{font-family:var(--f-hand);font-size:2.1rem;margin:0 0 .3rem;line-height:1.05;color:var(--accent)}
+.lesson p{margin:.5rem 0;max-width:62ch}
+.idea{font-family:var(--f-hand);font-size:1.45rem;line-height:1.25;color:var(--ink);border-left:3px solid var(--accent);padding-left:12px;margin:.8rem 0}
+.calc{background:var(--accent-soft);border-radius:8px;padding:14px 16px;font-family:var(--f-mono);font-size:.98rem;overflow-x:auto;min-width:0}
+.calc .row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:.35rem 0}
+.calc .step{font-family:var(--f-body);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-top:.7rem}
+.calc .step:first-child{margin-top:0}
+.res{font-weight:600;color:var(--accent)}
+.cv{display:inline-flex;flex-direction:column;align-items:center;padding:0 .45em;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:9px;line-height:1.25;font-variant-numeric:tabular-nums;min-width:2.2em}
+.ca{color:var(--va)} .cb{color:var(--vb)} .cm{color:var(--vm)}
+.c1{color:var(--x1)} .c2{color:var(--x2)} .c3{color:var(--x3)}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 14px;font-size:.92rem}
+.warn b{color:inherit}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.rule h3{margin:0 0 .3rem;font-size:1rem}
+.rule code{font-family:var(--f-mono);font-size:.92rem}
+.rule p{margin:.2rem 0 0;color:var(--muted);font-size:.92rem}
+section>h2.sec{font-family:var(--f-hand);font-size:2.2rem;margin:0 0 .6rem;color:var(--accent)}
+.byline{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:.35rem}
+.sig{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;border-top:1px dashed var(--line);padding-top:14px;color:var(--muted);font-size:.85rem}
+.sig-name{font-family:var(--f-hand);font-size:1.7rem;color:var(--accent);line-height:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>Vektoren im Raum</h1>
+    <div class="byline">von Kian Akus · GFS Mathematik · Klasse 13/4</div>
+    <p><span class="lead">Alles, was du für die Wiederholung aus Klasse 11 brauchst – zum Anfassen.</span>
+    Dreh das Bild mit der Maus oder dem Finger. Ändere die Punkte A, B, C rechts und schau zu, wie sich jede Rechnung sofort mitändert.</p>
+  </header>
+
+  <div class="stage">
+    <div class="canvas-box">
+      <canvas id="cv" width="800" height="600" aria-label="3D-Koordinatensystem mit den Punkten A, B, C und den Vektoren AB und AC"></canvas>
+      <button class="reset" id="resetView" type="button">Ansicht zurücksetzen</button>
+      <div class="hint">Ziehen = drehen</div>
+    </div>
+
+    <div class="panel">
+      <div>
+        <div class="label">Beispiel laden</div>
+        <div class="presets" id="presets">
+          <button type="button" data-p="muster" aria-pressed="true">Musteraufgabe</button>
+          <button type="button" data-p="uebung" aria-pressed="false">Übungsaufgabe</button>
+          <button type="button" data-p="buch" aria-pressed="false">Buch (Rückblick)</button>
+        </div>
+      </div>
+      <div class="points">
+        <div class="label">Punkte (Koordinaten frei änderbar)</div>
+        <div class="coords-head"><span></span><span class="c1">x₁</span><span class="c2">x₂</span><span class="c3">x₃</span></div>
+        <div class="pt"><b>A</b><input id="a1" type="number" step="1" min="-6" max="6" aria-label="A x1"><input id="a2" type="number" step="1" min="-6" max="6" aria-label="A x2"><input id="a3" type="number" step="1" min="-6" max="6" aria-label="A x3"></div>
+        <div class="pt"><b>B</b><input id="b1" type="number" step="1" min="-6" max="6" aria-label="B x1"><input id="b2" type="number" step="1" min="-6" max="6" aria-label="B x2"><input id="b3" type="number" step="1" min="-6" max="6" aria-label="B x3"></div>
+        <div class="pt"><b>C</b><input id="c1" type="number" step="1" min="-6" max="6" aria-label="C x1"><input id="c2" type="number" step="1" min="-6" max="6" aria-label="C x2"><input id="c3" type="number" step="1" min="-6" max="6" aria-label="C x3"></div>
+      </div>
+      <div class="legend">
+        <span class="ca">Vektor AB</span><span class="cb">Vektor AC</span><span class="cm">Mittelpunkt M</span>
+      </div>
+      <div class="legend">
+        <span class="c1">x₁-Schritt</span><span class="c2">x₂-Schritt</span><span class="c3">x₃-Schritt</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="tabs" role="tablist" id="tabs">
+      <button type="button" role="tab" data-t="0" aria-pressed="true">1 · Punkt &amp; Vektor</button>
+      <button type="button" role="tab" data-t="1" aria-pressed="false">2 · Länge</button>
+      <button type="button" role="tab" data-t="2" aria-pressed="false">3 · Mittelpunkt</button>
+      <button type="button" role="tab" data-t="3" aria-pressed="false">4 · Skalarprodukt</button>
+      <button type="button" role="tab" data-t="4" aria-pressed="false">5 · Winkel</button>
+    </div>
+    <div class="lesson" id="lesson" style="margin-top:12px"></div>
+  </section>
+
+  <section>
+    <h2 class="sec">Die fünf Sätze, die alles tragen</h2>
+    <div class="rules">
+      <div class="rule"><h3>Vektor von A nach B</h3><code>AB = B − A</code><p>„Spitze minus Fuß“ – Ziel minus Start.</p></div>
+      <div class="rule"><h3>Länge</h3><code>|v| = √(v₁² + v₂² + v₃²)</code><p>Pythagoras, nur in 3D.</p></div>
+      <div class="rule"><h3>Mittelpunkt</h3><code>M = (A + B) : 2</code><p>Durchschnitt jeder Koordinate.</p></div>
+      <div class="rule"><h3>Senkrecht</h3><code>u · v = 0</code><p>Erste·erste + zweite·zweite + dritte·dritte.</p></div>
+      <div class="rule"><h3>Winkel</h3><code>cos α = u·v / (|u|·|v|)</code><p>Taschenrechner auf DEG.</p></div>
+    </div>
+  </section>
+
+  <div class="warn"><b>Die drei Klassiker-Fehler:</b> Vektor falsch herum (A − B statt B − A) · Minus mal Minus vergessen: 3 − (−1) = 4 · negative Zahl quadrieren ohne Klammer: (−2)² = +4.</div>
+  <footer class="sig">
+    <span class="sig-name">Kian Akus</span>
+    <span>Erstellt für die GFS „Wiederholung Vektorgeometrie“ · Klasse 13/4 · KHS Donaueschingen · Oktober 2026</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const PRESETS={
+  muster:{A:[1,2,-1],B:[3,3,1],C:[2,0,1]},
+  uebung:{A:[1,0,2],B:[3,2,3],C:[-1,1,4]},
+  buch:{A:[1,3,-2],B:[4,1,-1],C:[0,0,2]}
+};
+let P=JSON.parse(JSON.stringify(PRESETS.muster));
+let tab=0;
+const DEF={yaw:0.62,pitch:0.38};
+let view={...DEF};
+
+/* ---------- Zahlen ---------- */
+const fmt=x=>{const r=Math.round(x*100)/100;return (Object.is(r,-0)?0:r).toString().replace('.',',')};
+const par=x=>x<0?'('+fmt(x)+')':fmt(x);
+const sub=(u,v)=>u.map((x,i)=>x-v[i]);
+const dot=(u,v)=>u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+const len=u=>Math.sqrt(dot(u,u));
+function root(n){const s=Math.sqrt(n);return Number.isInteger(s)?fmt(s):'√'+fmt(n)+' ≈ '+fmt(s)}
+const cv=(v,cls='')=>`<span class="cv ${cls}"><span>${v[0]}</span><span>${v[1]}</span><span>${v[2]}</span></span>`;
+const cvc=v=>`<span class="cv"><span class="c1">${v[0]}</span><span class="c2">${v[1]}</span><span class="c3">${v[2]}</span></span>`;
+const pt=(n,p)=>`${n}(${p.map(fmt).join(' | ')})`;
+
+/* ---------- Inputs ---------- */
+const ids=['a','b','c'];
+function toInputs(){ids.forEach((k,i)=>{const p=P['ABC'[i]];for(let j=0;j<3;j++)$(k+(j+1)).value=p[j];});}
+function fromInputs(){ids.forEach((k,i)=>{P['ABC'[i]]=[0,1,2].map(j=>{const v=parseFloat($(k+(j+1)).value);return isNaN(v)?0:Math.max(-9,Math.min(9,v))});});}
+ids.forEach(k=>[1,2,3].forEach(j=>$(k+j).addEventListener('input',()=>{fromInputs();setPreset(null);update();})));
+function setPreset(name){document.querySelectorAll('#presets button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===name?'true':'false'));}
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{P=JSON.parse(JSON.stringify(PRESETS[b.dataset.p]));toInputs();setPreset(b.dataset.p);update();}));
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{tab=+b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));update();}));
+$('resetView').addEventListener('click',()=>{view={...DEF};draw();});
+
+/* ---------- Lektionen ---------- */
+function lessonHTML(){
+  const {A,B,C}=P, AB=sub(B,A), AC=sub(C,A), M=A.map((x,i)=>(x+B[i])/2);
+  if(tab===0){
+    return `<div><h2>Punkt und Vektor</h2>
+      <p>Ein <b>Punkt</b> ist ein Ort im Raum – drei Zahlen sagen, wo er liegt: erst nach vorne (x₁), dann nach rechts (x₂), dann nach oben (x₃).</p>
+      <p>Ein <b>Vektor</b> ist kein Ort, sondern eine <b>Verschiebung</b>: „geh so viel nach vorne, so viel nach rechts, so viel nach oben“. Im Bild siehst du das als farbige Treppe von A nach B.</p>
+      <div class="idea">Vektor von A nach B = Ziel minus Start = „Spitze minus Fuß“</div>
+      <p>Darum steht B vorne: Du fragst „wie weit muss ich von A aus gehen, um bei B zu landen?“</p></div>
+      <div class="calc">
+        <div class="step">Gegeben</div><div class="row">${pt('A',A)} &nbsp; ${pt('B',B)}</div>
+        <div class="step">Spitze minus Fuß</div>
+        <div class="row"><span class="ca">AB</span> = ${cv(B.map(fmt))} − ${cv(A.map(fmt))} = ${cv(B.map((b,i)=>fmt(b)+' − '+par(A[i])))}</div>
+        <div class="step">Ergebnis = die drei Treppenstufen</div>
+        <div class="row"><span class="ca">AB</span> = ${cvc(AB.map(fmt))}</div>
+        <div class="row" style="font-family:var(--f-body);font-size:.9rem">→ ${fmt(AB[0])} in x₁, ${fmt(AB[1])} in x₂, ${fmt(AB[2])} in x₃</div>
+        <div class="step">Gegenvektor (andersrum)</div>
+        <div class="row">BA = −AB = ${cv(AB.map(x=>fmt(-x)))}</div>
+      </div>`;
+  }
+  if(tab===1){
+    const s=AB.map(x=>x*x), sum=s[0]+s[1]+s[2], floor=s[0]+s[1];
+    return `<div><h2>Länge eines Vektors</h2>
+      <p>Wie lang ist der Pfeil von A nach B? Das ist der <b>Satz des Pythagoras</b>, nur zweimal hintereinander:</p>
+      <p>1. Am Boden: Die x₁- und x₂-Stufe bilden ein rechtwinkliges Dreieck. Die gestrichelte Bodendiagonale hat die Länge √(${par(AB[0])}² + ${par(AB[1])}²).</p>
+      <p>2. Nach oben: Bodendiagonale und x₃-Stufe bilden wieder ein rechtwinkliges Dreieck – dessen lange Seite ist der Vektor selbst.</p>
+      <div class="idea">Quadrieren, addieren, Wurzel ziehen.</div>
+      <p>Der <b>Abstand</b> zweier Punkte ist genau dasselbe: die Länge des Vektors zwischen ihnen.</p></div>
+      <div class="calc">
+        <div class="step">Vektor</div><div class="row"><span class="ca">AB</span> = ${cvc(AB.map(fmt))}</div>
+        <div class="step">Quadrieren</div><div class="row"><span class="c1">${par(AB[0])}²</span> = ${fmt(s[0])}, &nbsp;<span class="c2">${par(AB[1])}²</span> = ${fmt(s[1])}, &nbsp;<span class="c3">${par(AB[2])}²</span> = ${fmt(s[2])}</div>
+        <div class="step">Addieren</div><div class="row">${fmt(s[0])} + ${fmt(s[1])} + ${fmt(s[2])} = ${fmt(sum)}</div>
+        <div class="step">Wurzel</div><div class="row">|<span class="ca">AB</span>| = <span class="res">${root(sum)}</span></div>
+        <div class="row" style="font-family:var(--f-body);font-size:.85rem;color:var(--muted)">Zwischenschritt Boden: √${fmt(floor)} ≈ ${fmt(Math.sqrt(floor))}</div>
+      </div>`;
+  }
+  if(tab===2){
+    return `<div><h2>Mittelpunkt</h2>
+      <p>Der Mittelpunkt M liegt genau in der Mitte zwischen A und B. Rechnerisch ist das der <b>Durchschnitt</b> – für jede Koordinate einzeln.</p>
+      <div class="idea">Koordinaten addieren, durch 2 teilen.</div>
+      <p>Anders gedacht: Starte bei A und geh nur den <b>halben</b> Vektor AB. Beides gibt dasselbe Ergebnis.</p></div>
+      <div class="calc">
+        <div class="step">Gegeben</div><div class="row">${pt('A',A)} &nbsp; ${pt('B',B)}</div>
+        <div class="step">Je Koordinate: (A + B) : 2</div>
+        <div class="row">x₁: (${fmt(A[0])} + ${par(B[0])}) : 2 = ${fmt(M[0])}</div>
+        <div class="row">x₂: (${fmt(A[1])} + ${par(B[1])}) : 2 = ${fmt(M[1])}</div>
+        <div class="row">x₃: (${fmt(A[2])} + ${par(B[2])}) : 2 = ${fmt(M[2])}</div>
+        <div class="step">Ergebnis</div><div class="row"><span class="res cm">${pt('M',M)}</span></div>
+      </div>`;
+  }
+  if(tab===3){
+    const d=dot(AB,AC);
+    const verdict=d===0?'= 0 → AB und AC stehen <b>senkrecht</b> (orthogonal). Im Bild: rechter Winkel bei A.':(d>0?'&gt; 0 → kein rechter Winkel; der Winkel bei A ist <b>spitz</b> (unter 90°).':'&lt; 0 → kein rechter Winkel; der Winkel bei A ist <b>stumpf</b> (über 90°).');
+    return `<div><h2>Skalarprodukt</h2>
+      <p>Das Skalarprodukt multipliziert zwei Vektoren Zeile für Zeile und addiert alles. Heraus kommt eine <b>einzelne Zahl</b>, kein Vektor.</p>
+      <p>Die Zahl verrät, wie die beiden Pfeile zueinander stehen. Das Wichtigste:</p>
+      <div class="idea">Skalarprodukt = 0 ⇔ die Vektoren stehen senkrecht.</div>
+      <p>Damit prüft man rechte Winkel – und findet ein fehlendes r, indem man das Skalarprodukt gleich 0 setzt.</p></div>
+      <div class="calc">
+        <div class="step">Die zwei Vektoren am Punkt A</div>
+        <div class="row"><span class="ca">AB</span> = ${cv(AB.map(fmt),'ca')} &nbsp; <span class="cb">AC</span> = ${cv(AC.map(fmt),'cb')}</div>
+        <div class="step">erste·erste + zweite·zweite + dritte·dritte</div>
+        <div class="row">${par(AB[0])}·${par(AC[0])} + ${par(AB[1])}·${par(AC[1])} + ${par(AB[2])}·${par(AC[2])}</div>
+        <div class="row">= ${fmt(AB[0]*AC[0])} + ${par(AB[1]*AC[1])} + ${par(AB[2]*AC[2])} = <span class="res">${fmt(d)}</span></div>
+        <div class="step">Bedeutung</div>
+        <div class="row" style="font-family:var(--f-body)">${fmt(d)} ${verdict}</div>
+      </div>`;
+  }
+  const d=dot(AB,AC), l1=len(AB), l2=len(AC);
+  const ok=l1>0&&l2>0, c=ok?d/(l1*l2):0, ang=ok?Math.acos(Math.max(-1,Math.min(1,c)))*180/Math.PI:0;
+  const s1=dot(AB,AB), s2=dot(AC,AC);
+  return `<div><h2>Winkel zwischen Vektoren</h2>
+    <p>Das Skalarprodukt hängt mit dem Winkel zusammen: <b>u·v = |u|·|v|·cos α</b>. Nach cos α umgestellt ergibt sich die Winkelformel.</p>
+    <div class="idea">1. Skalarprodukt &nbsp;2. beide Längen &nbsp;3. teilen und cos⁻¹</div>
+    <p>Am Vorzeichen siehst du vorher schon die Richtung: positiv → spitz, null → 90°, negativ → stumpf. Taschenrechner auf <b>DEG</b>!</p></div>
+    <div class="calc">
+      <div class="step">1 · Skalarprodukt</div><div class="row"><span class="ca">AB</span> · <span class="cb">AC</span> = ${fmt(d)}</div>
+      <div class="step">2 · Längen</div><div class="row">|<span class="ca">AB</span>| = ${root(s1)}, &nbsp; |<span class="cb">AC</span>| = ${root(s2)}</div>
+      <div class="step">3 · Einsetzen</div>
+      ${ok?`<div class="row">cos α = ${fmt(d)} : (${fmt(l1)} · ${fmt(l2)}) ≈ ${fmt(Math.round(c*1000)/1000)}</div>
+      <div class="row">α = cos⁻¹(${fmt(Math.round(c*1000)/1000)}) ≈ <span class="res">${fmt(Math.round(ang*10)/10)}°</span></div>`:`<div class="row">Ein Vektor hat Länge 0 – dann gibt es keinen Winkel.</div>`}
+    </div>`;
+}
+
+/* ---------- 3D-Zeichnung ---------- */
+const canvas=$('cv'), ctx=canvas.getContext('2d');
+let W=800,H=600,scale=40;
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function proj(p){ // p = (x1,x2,x3) -> Bildschirm
+  const x=p[1], y=p[2], z=p[0];
+  const cy=Math.cos(view.yaw), sy=Math.sin(view.yaw), cp=Math.cos(view.pitch), sp=Math.sin(view.pitch);
+  const rx=x*cy - z*sy, rz=x*sy + z*cy;
+  const ry=y*cp - rz*sp;
+  return [W/2 + rx*scale, H*0.58 - ry*scale];
+}
+function line(a,b,col,w=1.5,dash){ctx.beginPath();ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;const p=proj(a),q=proj(b);ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.setLineDash([]);}
+function arrow(a,b,col,w=3){
+  line(a,b,col,w);
+  const p=proj(a),q=proj(b),ang=Math.atan2(q[1]-p[1],q[0]-p[0]),L=Math.hypot(q[0]-p[0],q[1]-p[1]);
+  if(L<4)return; const h=Math.min(14,L*0.4);
+  ctx.beginPath();ctx.fillStyle=col;ctx.moveTo(q[0],q[1]);
+  ctx.lineTo(q[0]-h*Math.cos(ang-0.4),q[1]-h*Math.sin(ang-0.4));
+  ctx.lineTo(q[0]-h*Math.cos(ang+0.4),q[1]-h*Math.sin(ang+0.4));ctx.closePath();ctx.fill();
+}
+function dotAt(p,col,r=5){const s=proj(p);ctx.beginPath();ctx.fillStyle=col;ctx.arc(s[0],s[1],r,0,7);ctx.fill();}
+function text(p,str,col,dx=8,dy=-8,font){const s=proj(p);ctx.fillStyle=col;ctx.font=font||'600 22px Caveat, cursive';ctx.fillText(str,s[0]+dx,s[1]+dy);}
+function draw(){
+  const ink=css('--ink'),muted=css('--muted'),grid=css('--grid'),line_=css('--line'),
+    va=css('--va'),vb=css('--vb'),vm=css('--vm'),x1=css('--x1'),x2=css('--x2'),x3=css('--x3'),accent=css('--accent'),card=css('--card');
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+  const dpr=window.devicePixelRatio||1;ctx.setTransform(dpr,0,0,dpr,0,0);
+  const {A,B,C}=P;
+  const ext=Math.max(4,...[A,B,C].flat().map(Math.abs))+1;
+  scale=Math.min(W,H)/(ext*1.75);
+  // Bodengitter (x1x2-Ebene)
+  for(let i=-ext;i<=ext;i++){line([i,-ext,0],[i,ext,0],grid,1);line([-ext,i,0],[ext,i,0],grid,1);}
+  // Achsen
+  const ax=[[ [ext+0.8,0,0],'x₁',x1],[[0,ext+0.8,0],'x₂',x2],[[0,0,ext],'x₃',x3]];
+  ax.forEach(([e,n,c])=>{line([-e[0]*0.25,-e[1]*0.25,-e[2]*0.25],[0,0,0],line_,1.5);arrow([0,0,0],e,c,2);text(e,n,c,6,4,'600 16px "IBM Plex Sans", sans-serif');});
+  for(let i=1;i<=ext;i++){[[i,0,0],[0,i,0],[0,0,i]].forEach(p=>{const s=proj(p);ctx.beginPath();ctx.fillStyle=muted;ctx.arc(s[0],s[1],1.8,0,7);ctx.fill();});}
+  text([0,0,0],'O',muted,-16,16,'500 13px "IBM Plex Sans", sans-serif');
+  // Lote der Punkte zum Boden
+  [A,B,C].forEach(p=>{if(p[2]!==0){line(p,[p[0],p[1],0],muted,1,[3,4]);dotAt([p[0],p[1],0],muted,2);}});
+  const AB=sub(B,A), AC=sub(C,A);
+  // Dreieck leicht füllen
+  ctx.beginPath();[A,B,C].forEach((p,i)=>{const s=proj(p);i?ctx.lineTo(s[0],s[1]):ctx.moveTo(s[0],s[1]);});ctx.closePath();
+  ctx.globalAlpha=0.08;ctx.fillStyle=accent;ctx.fill();ctx.globalAlpha=1;
+  line(B,C,muted,1.2,[5,4]);
+  // Treppe für Tab 1 und 2
+  if(tab===0||tab===1){
+    const s1=[B[0],A[1],A[2]], s2=[B[0],B[1],A[2]];
+    line(A,s1,x1,3);line(s1,s2,x2,3);line(s2,B,x3,3);
+    if(tab===1){line(A,s2,muted,1.6,[6,4]);}
+  }
+  // Rechter-Winkel-Marke / Winkelbogen
+  const l1=len(AB),l2=len(AC);
+  if((tab===3||tab===4)&&l1>0&&l2>0){
+    const u=AB.map(x=>x/l1), w=AC.map(x=>x/l2), d=dot(AB,AC);
+    const r=Math.min(l1,l2)*0.28;
+    if(d===0){
+      const p1=A.map((a,i)=>a+u[i]*r), p3=A.map((a,i)=>a+w[i]*r), p2=A.map((a,i)=>a+(u[i]+w[i])*r);
+      line(p1,p2,ink,1.6);line(p2,p3,ink,1.6);
+    } else {
+      const th=Math.acos(Math.max(-1,Math.min(1,dot(u,w))));
+      ctx.beginPath();ctx.strokeStyle=vm;ctx.lineWidth=2.4;
+      for(let k=0;k<=30;k++){const t=k/30, s=Math.sin(th);const a=Math.sin((1-t)*th)/s, b=Math.sin(t*th)/s;
+        const p=A.map((x,i)=>x+(a*u[i]+b*w[i])*r);const q=proj(p);k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}
+      ctx.stroke();
+      if(tab===4){const mid=A.map((x,i)=>x+(u[i]+w[i])*r*0.75);text(mid,'α',vm,-6,6);}
+    }
+  }
+  // Vektoren
+  arrow(A,B,va,3.4);
+  if(tab>=3) arrow(A,C,vb,3.4);
+  // Punkte
+  dotAt(A,ink);dotAt(B,ink);dotAt(C,tab>=3?ink:muted,tab>=3?5:4);
+  text(A,'A',ink,-22,-6);text(B,'B',ink,8,-8);text(C,'C',tab>=3?ink:muted,8,-8);
+  if(tab===2){const M=A.map((x,i)=>(x+B[i])/2);dotAt(M,vm,6);text(M,'M',vm,8,18);}
+  // Vektor-Beschriftung
+  const mAB=A.map((x,i)=>x+AB[i]*0.55);text(mAB,'AB',va,8,-6,'600 20px Caveat, cursive');
+  if(tab>=3){const mAC=A.map((x,i)=>x+AC[i]*0.55);text(mAC,'AC',vb,8,16,'600 20px Caveat, cursive');}
+}
+function resize(){
+  const r=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  W=r.width;H=r.width*0.75;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);draw();
+}
+new ResizeObserver(resize).observe(canvas);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+// Drehen
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw:view.yaw,pitch:view.pitch};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;view.yaw=drag.yaw-(e.clientX-drag.x)*0.008;view.pitch=Math.max(-0.2,Math.min(1.45,drag.pitch+(e.clientY-drag.y)*0.006));draw();});
+canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);
+
+function update(){$('lesson').innerHTML=lessonHTML();draw();}
+toInputs();update();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+})();
+</script>
+
+</body>
+</html>
